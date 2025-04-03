@@ -3,6 +3,18 @@ set -e
 
 # Factorioサーバーコンテナエントリーポイント
 
+# シンボリックリンクを作成（Factorioが期待するパス構造を維持）
+mkdir -p /opt/factorio/factorio/saves
+rm -rf /opt/factorio/factorio/saves
+ln -sf /opt/factorio/saves /opt/factorio/factorio/saves
+
+# 初回起動時にセーブファイルを作成
+if [ ! -f /opt/factorio/saves/save.zip ] && [ ! -f /opt/factorio/factorio/saves/save.zip ]; then
+    echo "新しいセーブファイルを作成します..."
+    cd /opt/factorio
+    ./factorio/bin/x64/factorio --create /opt/factorio/saves/save.zip
+fi
+
 # 環境変数のデフォルト値設定
 : ${FACTORIO_PORT:=34197}
 : ${FACTORIO_RCON_PORT:=27015}

@@ -236,6 +236,114 @@ Docker版を使用する場合は、以下の手順でビルドと実行を行�
      factorio-server:latest
    ```
 
+## WSL上でのDockerコンテナの実行とWindowsからのアクセス
+
+WSL（Windows Subsystem for Linux）上でFactorioサーバーを実行し、Windowsホストからアクセスする方法を説明します。
+
+### WSL上でのDockerコンテナの実行
+
+1. **Dockerイメージのビルド**
+
+   WSL内で上記の「Docker版のビルドと使用方法」の手順に従ってイメージをビルドします。
+
+2. **コンテナの起動**
+
+   ```bash
+   sudo docker run -d --name factorio-server -p 34197:34197/udp factorio-server:latest
+   ```
+
+3. **データの永続化**
+
+   データを永続化するには、以下のようにボリュームマウントを使用します：
+
+   ```bash
+   mkdir -p ~/factorio/saves
+   mkdir -p ~/factorio/mods
+   mkdir -p ~/factorio/config
+   mkdir -p ~/factorio/scenarios
+
+   sudo docker run -d --name factorio-server \
+     -p 34197:34197/udp \
+     -v ~/factorio/saves:/opt/factorio/saves \
+     -v ~/factorio/mods:/opt/factorio/mods \
+     -v ~/factorio/config:/opt/factorio/config \
+     -v ~/factorio/scenarios:/opt/factorio/scenarios \
+     factorio-server:latest
+   ```
+
+### Windowsホストからのアクセス
+
+1. **WSLのIPアドレスを確認**
+
+   WSL内で以下のコマンドを実行して、WSLに割り当てられているIPアドレスを確認します：
+
+   ```bash
+   hostname -I
+   ```
+
+   これにより、WSLのIPアドレス（例：`172.17.123.45`）が表示されます。
+
+2. **ファイアウォールの設定**
+
+   WSLのファイアウォールでUDPポート34197が開放されていることを確認します：
+
+   ```bash
+   sudo ufw status
+   ```
+
+   必要に応じて、ポートを開放します：
+
+   ```bash
+   sudo ufw allow 34197/udp
+   ```
+
+3. **Factorioクライアントからの接続**
+
+   Windowsで実行しているFactorioゲームクライアントを起動し、以下の手順で接続します：
+
+   - メインメニューから「マルチプレイヤー」を選択
+   - 「サーバーに接続」をクリック
+   - サーバーアドレスに、WSLのIPアドレス（例：`172.17.123.45`）を入力
+   - ポート番号はデフォルトの`34197`を使用
+
+4. **WSL2での追加設定（必要な場合）**
+
+   WSL2はNATを使用しているため、追加の設定が必要な場合があります。Windows側でポート転送を設定します：
+
+   ```powershell
+   # PowerShellを管理者権限で実行
+   $wslIp = (wsl hostname -I).Trim()
+   netsh interface portproxy add v4tov4 listenport=34197 listenaddress=0.0.0.0 connectport=34197 connectaddress=$wslIp protocol=udp
+   ```
+
+   また、Windowsファイアウォールで、UDPポート34197の受信トラフィックを許可する必要があります。
+
+### コンテナの管理
+
+1. **コンテナの停止**
+
+   ```bash
+   sudo docker stop factorio-server
+   ```
+
+2. **コンテナの再起動**
+
+   ```bash
+   sudo docker start factorio-server
+   ```
+
+3. **コンテナの削除**
+
+   ```bash
+   sudo docker rm factorio-server
+   ```
+
+4. **コンテナのログ確認**
+
+   ```bash
+   sudo docker logs factorio-server
+   ```
+
 ## Gitリポジトリでの使用
 
 このリポジトリをGitで管理する場合、Factorioのバージョンとハッシュを固定値としてコミットしないことをお勧めします。代わりに、以下のいずれかの方法を使用してください：
