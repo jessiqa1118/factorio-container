@@ -56,7 +56,7 @@ MOUNT=$(buildah mount $CONTAINER)
 # ビルドコンテキストをマウントポイントにコピー
 echo "ビルドファイルをコンテナにコピーしています..."
 cp install_factorio.sh $MOUNT/
-cp entrypoint.sh $MOUNT/
+cp ../common/entrypoint.sh $MOUNT/
 
 # スクリプトに実行権限を付与
 buildah run $CONTAINER chmod +x /install_factorio.sh
