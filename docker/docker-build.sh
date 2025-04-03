@@ -53,7 +53,7 @@ docker build \
   --build-arg FACTORIO_VERSION="$FACTORIO_VERSION" \
   --build-arg FACTORIO_SHA256="$FACTORIO_SHA256" \
   -t factorio-server:$FACTORIO_IMAGE_TAG \
-  .
+  -f Dockerfile ..
 
 echo "Factorioサーバー用Dockerイメージのビルドが完了しました"
 echo "イメージ名: factorio-server:$FACTORIO_IMAGE_TAG"

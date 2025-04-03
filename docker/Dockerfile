@@ -39,19 +39,19 @@ RUN useradd -r -m -d /opt/factorio -s /bin/bash factorio && \
     chown -R factorio:factorio /var/log/factorio
 
 # サーバー設定ファイルの作成
-COPY ../common/server-settings.json /opt/factorio/config/server-settings.json
+COPY common/server-settings.json /opt/factorio/config/server-settings.json
 RUN chown factorio:factorio /opt/factorio/config/server-settings.json
 
 # サーバー起動スクリプトの作成
-COPY ../common/start-server.sh /opt/factorio/start-server.sh
+COPY common/start-server.sh /opt/factorio/start-server.sh
 RUN chmod +x /opt/factorio/start-server.sh && \
     chown factorio:factorio /opt/factorio/start-server.sh
 
 # Supervisorの設定
-COPY supervisord.conf /etc/supervisor/conf.d/factorio.conf
+COPY docker/supervisord.conf /etc/supervisor/conf.d/factorio.conf
 
 # エントリーポイントスクリプトの設定
-COPY ../common/entrypoint.sh /entrypoint.sh
+COPY common/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # ボリュームの設定
