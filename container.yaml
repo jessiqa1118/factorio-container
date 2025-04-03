@@ -1,0 +1,8 @@
+# Factorioサーバー用OCIコンテナ構成
+# ベース: Ubuntu 24.04
+# 用途: Proxmox VE LXCコンテナ、K8s、OpenStack等での実行
+
+version: 1.0
+os: ubuntu
+release: "24.04"
+description: "Factorio Game Server Container"
