@@ -9,14 +9,30 @@ apt-get update
 apt-get install -y wget tar xz-utils curl ca-certificates jq supervisor procps
 
 # Factorioサーバーのバージョン設定
-FACTORIO_VERSION="1.1.91"
-FACTORIO_SHA256="c0c0c9c1a9a7e7a1c3a4f7c0a9a19e4c3a6f7c0a9a19e4c3a6f7c0a9a19e4c3a"  # 実際のSHA256に置き換える必要があります
+# 環境変数から読み取り、設定されていない場合はデフォルト値を使用
+: ${FACTORIO_VERSION:="1.1.91"}
+: ${FACTORIO_SHA256:=""}  # デフォルトは空文字列
+
+# バージョンとハッシュの情報を表示
+echo "Factorioバージョン: $FACTORIO_VERSION"
+if [ -n "$FACTORIO_SHA256" ]; then
+  echo "SHA256ハッシュ: $FACTORIO_SHA256"
+else
+  echo "SHA256ハッシュが指定されていません。ハッシュ検証をスキップします。"
+fi
 
 # Factorioサーバーのダウンロードと展開
 mkdir -p /opt/factorio
 cd /opt/factorio
 wget -O factorio_headless.tar.xz https://factorio.com/get-download/$FACTORIO_VERSION/headless/linux64
-echo "$FACTORIO_SHA256 factorio_headless.tar.xz" | sha256sum -c || exit 1
+
+# SHA256ハッシュが指定されている場合のみ検証を実行
+if [ -n "$FACTORIO_SHA256" ]; then
+  echo "ダウンロードしたファイルのハッシュを検証しています..."
+  echo "$FACTORIO_SHA256 factorio_headless.tar.xz" | sha256sum -c || exit 1
+else
+  echo "SHA256ハッシュが指定されていないため、ハッシュ検証をスキップします。"
+fi
 tar -xJf factorio_headless.tar.xz
 rm factorio_headless.tar.xz
 

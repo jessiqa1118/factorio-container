@@ -15,18 +15,44 @@
 - buildahがインストールされていること
 - Factorioのヘッドレスサーバーをダウンロードするためのアクセス権
 
+## ビルド環境の準備
+
+ビルド手順は、OCIコンテナイメージをビルドするホストマシン（ビルド環境）で実行します。ビルド環境は以下のいずれかを使用できます：
+
+1. 開発者のローカルマシン（Linux環境推奨）
+2. CIサーバー（Jenkins、GitHub Actions、GitLab CIなど）
+3. Proxmox VEホスト自体
+
+### ビルド環境の要件
+
+- Linux環境（Ubuntu、Debian、CentOSなど）
+- buildahがインストールされていること
+- インターネット接続（Factorioサーバーのダウンロード用）
+- 十分なディスク容量（最低2GB）
+
+### buildahのインストール
+
+Ubuntuの場合：
+```bash
+sudo apt update
+sudo apt install -y buildah
+```
+
+CentOS/RHELの場合：
+```bash
+sudo yum install -y buildah
+```
+
 ## ビルド手順
 
-1. 最新のFactorioバージョンとSHA256ハッシュを確認
+ビルド環境が準備できたら、以下の手順でOCIコンテナイメージをビルドします：
 
-   Factorioの公式サイトから最新のヘッドレスサーバーバージョンとSHA256ハッシュを確認し、`install_factorio.sh`の以下の部分を更新します：
+1. このリポジトリをクローンまたはダウンロード
 
    ```bash
-   FACTORIO_VERSION="1.1.91"
-   FACTORIO_SHA256="c0c0c9c1a9a7e7a1c3a4f7c0a9a19e4c3a6f7c0a9a19e4c3a6f7c0a9a19e4c3a"
+   git clone https://your-repository-url.git
+   cd factorio-container
    ```
-
-   実際のSHA256ハッシュは[Factorioのダウンロードページ](https://factorio.com/download)で確認できます。
 
 2. スクリプトに実行権限を付与
 
@@ -36,11 +62,45 @@
 
 3. OCIコンテナイメージをビルド
 
+   以下のいずれかの方法でビルドできます：
+
+   ### 方法1: デフォルト設定でビルド
+
    ```bash
    ./build.sh
    ```
 
-   ビルドが成功すると、`factorio-server:latest`というOCIイメージが作成されます。
+   デフォルトでは、Factorioバージョン1.1.91がインストールされ、SHA256ハッシュ検証はスキップされます。
+
+   ### 方法2: コマンドライン引数でバージョンとハッシュを指定
+
+   ```bash
+   ./build.sh --version=1.1.91 --sha256=実際のSHA256ハッシュ値 --tag=1.1.91
+   ```
+
+   利用可能なオプション：
+   - `--version=VERSION`: Factorioのバージョンを指定
+   - `--sha256=HASH`: ダウンロードファイルのSHA256ハッシュを指定
+   - `--tag=TAG`: ビルドするイメージのタグを指定（デフォルト: latest）
+   - `--help`: ヘルプメッセージを表示
+
+   ### 方法3: 環境変数を使用
+
+   ```bash
+   FACTORIO_VERSION=1.1.91 FACTORIO_SHA256=実際のSHA256ハッシュ値 FACTORIO_IMAGE_TAG=1.1.91 ./build.sh
+   ```
+
+   実際のSHA256ハッシュは[Factorioのダウンロードページ](https://factorio.com/download)で確認できます。
+
+   ビルドが成功すると、指定したタグ（デフォルトは`latest`）でOCIイメージが作成されます。
+
+## Gitリポジトリでの使用
+
+このリポジトリをGitで管理する場合、Factorioのバージョンとハッシュを固定値としてコミットしないことをお勧めします。代わりに、以下のいずれかの方法を使用してください：
+
+1. ビルド時にコマンドライン引数または環境変数で指定する
+2. ローカル環境専用の設定ファイル（例: `.env.local`）を作成し、`.gitignore`に追加する
+3. CIパイプラインで自動的に最新バージョンを取得してビルドする
 
 ## Proxmox VEへのデプロイ
 
