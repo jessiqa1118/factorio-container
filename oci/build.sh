@@ -5,8 +5,8 @@ set -e
 # buildahを使用してDockerなしでOCIイメージを構築
 
 # 環境変数のデフォルト値を設定
-: ${FACTORIO_VERSION:="1.1.91"}
-: ${FACTORIO_SHA256:=""}
+: ${FACTORIO_VERSION:="2.0.43"}
+: ${FACTORIO_SHA256:="BDE6E167330C4439CE7DF3AC519EA445120258EF676F1F6AD31D0C2816D3AEE3"}
 : ${FACTORIO_IMAGE_TAG:="latest"}
 
 # コマンドライン引数の処理

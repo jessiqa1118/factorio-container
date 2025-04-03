@@ -10,8 +10,8 @@ apt-get install -y wget tar xz-utils curl ca-certificates jq supervisor procps
 
 # Factorioサーバーのバージョン設定
 # 環境変数から読み取り、設定されていない場合はデフォルト値を使用
-: ${FACTORIO_VERSION:="1.1.91"}
-: ${FACTORIO_SHA256:=""}  # デフォルトは空文字列
+: ${FACTORIO_VERSION:="2.0.43"}
+: ${FACTORIO_SHA256:="BDE6E167330C4439CE7DF3AC519EA445120258EF676F1F6AD31D0C2816D3AEE3"}
 
 # バージョンとハッシュの情報を表示
 echo "Factorioバージョン: $FACTORIO_VERSION"
