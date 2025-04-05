@@ -379,13 +379,15 @@ WSL2を起動したタイミングで自動的にFactorioサーバーを起動�
    Type=oneshot
    RemainAfterExit=yes
    ExecStartPre=/bin/bash -c 'if ! docker ps -a | grep -q factorio-server; then \
+     # ユーザーのホームディレクトリを取得
+     USER_HOME=$(getent passwd $SUDO_USER | cut -d: -f6); \
      docker run -d --name factorio-server \
        -p 34197:34197/udp \
-       -v ~/factorio/config:/opt/factorio/config \
-       -v ~/factorio/saves:/opt/factorio/saves \
-       -v ~/factorio/mods:/opt/factorio/mods \
-       -v ~/factorio/scenarios:/opt/factorio/scenarios \
-       -v ~/factorio/entrypoint-custom.sh:/entrypoint-custom.sh \
+       -v $USER_HOME/factorio/config:/opt/factorio/config \
+       -v $USER_HOME/factorio/saves:/opt/factorio/saves \
+       -v $USER_HOME/factorio/mods:/opt/factorio/mods \
+       -v $USER_HOME/factorio/scenarios:/opt/factorio/scenarios \
+       -v $USER_HOME/factorio/entrypoint-custom.sh:/entrypoint-custom.sh \
        --entrypoint /entrypoint-custom.sh \
        factorio-server:latest; \
    fi'
@@ -407,14 +409,22 @@ WSL2を起動したタイミングで自動的にFactorioサーバーを起動�
    ln -sf /opt/factorio/saves /opt/factorio/factorio/saves
 
    # サーバーを起動（新しいセーブファイルを作成）
-   cd /opt/factorio
    if [ ! -f /opt/factorio/saves/save.zip ]; then
      echo "新しいセーブファイルを作成します..."
-     ./factorio/bin/x64/factorio --create /opt/factorio/saves/save.zip
+     /opt/factorio/factorio/bin/x64/factorio --create /opt/factorio/saves/save.zip
    fi
 
-   # サーバーを起動
-   exec ./factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings ./config/server-settings.json "$@"' > ~/factorio/entrypoint-custom.sh
+   # RCONパスワードの設定（セキュリティのため変更することを強く推奨）
+   RCON_PASSWORD=${FACTORIO_RCON_PASSWORD:-"factorio_default_password"}
+   RCON_PORT=${FACTORIO_RCON_PORT:-27015}
+
+   # サーバーを起動（RCON設定を明示的に指定）
+   exec /opt/factorio/factorio/bin/x64/factorio \
+     --start-server /opt/factorio/saves/save.zip \
+     --server-settings /opt/factorio/config/server-settings.json \
+     --rcon-port ${RCON_PORT} \
+     --rcon-password ${RCON_PASSWORD} \
+     "$@"' > ~/factorio/entrypoint-custom.sh
    
    chmod +x ~/factorio/entrypoint-custom.sh
    ```
@@ -565,5 +575,6 @@ WSL2を起動したタイミングで自動的にFactorioサーバーを起動�
 ## 注意事項
 
 - Factorioサーバーを公開する場合は、適切なファイアウォール設定を行ってください。
-- RCONパスワードを設定する場合は、強力なパスワードを使用してください。
+- RCONパスワードを設定する場合は、強力なパスワードを使用してください。デフォルトのパスワード「factorio_default_password」は必ず変更してください。
+- RCON機能を使用する場合は、環境変数`FACTORIO_RCON_PASSWORD`でパスワードを設定するか、entrypoint-custom.shスクリプトを編集してください。
 - Factorioの公式サイトから最新のヘッドレスサーバーバージョンとSHA256ハッシュを確認することをお勧めします。
