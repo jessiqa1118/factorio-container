@@ -572,6 +572,102 @@ WSL2を起動したタイミングで自動的にFactorioサーバーを起動�
 - `/opt/factorio/config`: 設定ファイル
 - `/opt/factorio/scenarios`: シナリオ
 
+## RCONクライアントの設定
+
+Factorioサーバーをリモートから管理するためのRCONクライアントを設定する方法を説明します。このリポジトリには、RCONクライアントのセットアップを簡単にするためのツールが含まれています。
+
+### 付属ツールを使用したインストール（推奨）
+
+このリポジトリには、RCONクライアントのセットアップを自動化するツールが含まれています：
+
+1. **インストールスクリプトを実行**:
+
+   ```bash
+   # スクリプトに実行権限を付与
+   chmod +x tools/install-rcon-client.sh
+   
+   # インストールを実行
+   ./tools/install-rcon-client.sh
+   ```
+
+   このスクリプトは以下の処理を行います：
+   - 必要なディレクトリ（~/bin、~/.config）を作成
+   - rcon-cliがインストールされていない場合はインストールを試みる
+   - factorio-rconスクリプトを~/binにコピー
+   - 設定ファイルのテンプレートを~/.configにコピー
+   - PATHに~/binを追加（必要な場合）
+
+2. **設定ファイルを編集**:
+
+   ```bash
+   # エディタで設定ファイルを開く
+   nano ~/.config/factorio-rcon.conf
+   ```
+
+   以下の項目を設定します：
+   - `FACTORIO_RCON_HOST`: サーバーのホスト名またはIPアドレス（デフォルト: 127.0.0.1）
+   - `FACTORIO_RCON_PORT`: RCONポート（デフォルト: 27015）
+   - `FACTORIO_RCON_PASSWORD`: RCONパスワード
+
+### 手動インストール
+
+付属ツールを使用せずに手動でインストールする場合は、以下の手順に従ってください：
+
+1. **RCONクライアントツールをインストール**:
+
+   ```bash
+   # Ubuntuの場合
+   sudo apt-get install rcon-cli
+
+   # その他のディストリビューションの場合は、適切なパッケージマネージャを使用してください
+   ```
+
+2. **専用のシェルスクリプトを作成**:
+
+   ```bash
+   mkdir -p ~/bin
+   cp tools/factorio-rcon ~/bin/
+   chmod +x ~/bin/factorio-rcon
+   ```
+
+3. **設定ファイルを作成**:
+
+   ```bash
+   mkdir -p ~/.config
+   cp tools/factorio-rcon.conf.example ~/.config/factorio-rcon.conf
+   
+   # 設定ファイルのパーミッションを制限
+   chmod 600 ~/.config/factorio-rcon.conf
+   
+   # 設定ファイルを編集
+   nano ~/.config/factorio-rcon.conf
+   ```
+
+4. **PATHに追加**:
+
+   ```bash
+   echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+### 使用方法
+
+```bash
+# コマンドの実行例
+factorio-rcon /players       # プレイヤーリストの取得
+factorio-rcon /help          # ヘルプの表示
+factorio-rcon /save          # ゲームの保存
+factorio-rcon /quit          # サーバーの停止
+```
+
+設定ファイルが存在しない場合や、環境変数`FACTORIO_RCON_PASSWORD`が設定されていない場合は、パスワードの入力を求められます。
+
+### セキュリティに関する注意事項
+
+- 設定ファイル（`~/.config/factorio-rcon.conf`）には機密情報が含まれるため、適切なパーミッション（`chmod 600`）を設定してください。
+- パスワードをスクリプトや設定ファイルに直接記載する代わりに、環境変数を使用することも検討してください。
+- 公開サーバーでは、強力なパスワードを使用し、定期的に変更することをお勧めします。
+
 ## 注意事項
 
 - Factorioサーバーを公開する場合は、適切なファイアウォール設定を行ってください。

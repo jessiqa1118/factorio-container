@@ -1,0 +1,12 @@
+# Factorio RCON設定
+# このファイルを ~/.config/factorio-rcon.conf にコピーして使用してください
+# コピー後、chmod 600 ~/.config/factorio-rcon.conf で権限を制限することをお勧めします
+
+# サーバーのホスト名またはIPアドレス
+FACTORIO_RCON_HOST="127.0.0.1"
+
+# RCONポート
+FACTORIO_RCON_PORT="27015"
+
+# RCONパスワード（セキュリティのため強力なパスワードを使用してください）
+FACTORIO_RCON_PASSWORD="your_secure_password_here"

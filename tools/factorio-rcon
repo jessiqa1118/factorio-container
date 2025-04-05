@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Factorio RCON Client
+# このスクリプトは、Factorioサーバーへのリモートコンソール接続を提供します
+
+# 設定ファイルの読み込み（存在する場合）
+CONFIG_FILE="$HOME/.config/factorio-rcon.conf"
+if [ -f "$CONFIG_FILE" ]; then
+  source "$CONFIG_FILE"
+fi
+
+# 環境変数が設定されていない場合はパスワードを尋ねる
+if [ -z "$FACTORIO_RCON_PASSWORD" ]; then
+  read -s -p "RCON Password: " FACTORIO_RCON_PASSWORD && echo
+fi
+
+# デフォルトのホストとポート
+HOST=${FACTORIO_RCON_HOST:-"127.0.0.1"}
+PORT=${FACTORIO_RCON_PORT:-"27015"}
+
+# RCONコマンドの実行
+rcon -a "$HOST:$PORT" -p "$FACTORIO_RCON_PASSWORD" "$@"
