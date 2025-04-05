@@ -344,6 +344,103 @@ WSL（Windows Subsystem for Linux）上でFactorioサーバーを実行し、Win
    sudo docker logs factorio-server
    ```
 
+### WSL2起動時の自動起動設定
+
+WSL2を起動したタイミングで自動的にFactorioサーバーを起動させるには、systemdサービスとして登録する方法が最も効果的です。
+
+1. **systemdが有効になっていることを確認**:
+
+   ```bash
+   systemctl --version
+   ```
+
+   もし有効になっていない場合は、`/etc/wsl.conf`に以下を追加します：
+
+   ```
+   [boot]
+   systemd=true
+   ```
+
+   その後、WSLを再起動します：
+   ```powershell
+   wsl --shutdown
+   ```
+
+2. **サービスファイルを作成**:
+
+   ```bash
+   sudo tee /etc/systemd/system/factorio-server.service > /dev/null << 'EOF'
+   [Unit]
+   Description=Factorio Game Server
+   After=docker.service
+   Requires=docker.service
+
+   [Service]
+   Type=oneshot
+   RemainAfterExit=yes
+   ExecStartPre=/bin/bash -c 'if ! docker ps -a | grep -q factorio-server; then \
+     docker run -d --name factorio-server \
+       -p 34197:34197/udp \
+       -v ~/factorio/config:/opt/factorio/config \
+       -v ~/factorio/saves:/opt/factorio/saves \
+       -v ~/factorio/mods:/opt/factorio/mods \
+       -v ~/factorio/scenarios:/opt/factorio/scenarios \
+       -v ~/factorio/entrypoint-custom.sh:/entrypoint-custom.sh \
+       --entrypoint /entrypoint-custom.sh \
+       factorio-server:latest; \
+   fi'
+   ExecStart=/usr/bin/docker start factorio-server
+   ExecStop=/usr/bin/docker stop factorio-server
+
+   [Install]
+   WantedBy=multi-user.target
+   EOF
+   ```
+
+   カスタムエントリポイントを使用する場合は、事前に以下のスクリプトを作成しておきます：
+
+   ```bash
+   echo '#!/bin/bash
+   # シンボリックリンクを作成
+   mkdir -p /opt/factorio/factorio/saves
+   rm -rf /opt/factorio/factorio/saves
+   ln -sf /opt/factorio/saves /opt/factorio/factorio/saves
+
+   # サーバーを起動（新しいセーブファイルを作成）
+   cd /opt/factorio
+   if [ ! -f /opt/factorio/saves/save.zip ]; then
+     echo "新しいセーブファイルを作成します..."
+     ./factorio/bin/x64/factorio --create /opt/factorio/saves/save.zip
+   fi
+
+   # サーバーを起動
+   exec ./factorio/bin/x64/factorio --start-server /opt/factorio/saves/save.zip --server-settings ./config/server-settings.json "$@"' > ~/factorio/entrypoint-custom.sh
+   
+   chmod +x ~/factorio/entrypoint-custom.sh
+   ```
+
+3. **サービスを有効化**:
+
+   ```bash
+   sudo systemctl enable factorio-server.service
+   sudo systemctl start factorio-server.service
+   ```
+
+4. **サービスの管理**:
+
+   ```bash
+   # サービスの状態確認
+   sudo systemctl status factorio-server.service
+
+   # 手動で起動
+   sudo systemctl start factorio-server.service
+
+   # 手動で停止
+   sudo systemctl stop factorio-server.service
+   ```
+
+これにより、WSL2を起動するたびに自動的にFactorioサーバーが起動し、WSL2のシャットダウン時には適切に停止されます。
+
 ## Gitリポジトリでの使用
 
 このリポジトリをGitで管理する場合、Factorioのバージョンとハッシュを固定値としてコミットしないことをお勧めします。代わりに、以下のいずれかの方法を使用してください：
